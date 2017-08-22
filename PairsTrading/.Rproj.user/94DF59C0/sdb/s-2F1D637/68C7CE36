@@ -1,0 +1,17 @@
+{
+    "contents" : "\n# Inputs:\n#   s: state, represented by an array of integers\n#   s[1] 0\n#   s[2] 0\n#   s[3] == 1,end;\n#   a: action\n#    a[1] esimate period\n#    a[2] entryZscore\n#    a[3] stoplossZscore\n# output:\n# list of:\n#   new state\n#   reward\n\nSetp <- function(s, a)\n{\n  # if terminal state, exit gracefully\n  if(s[3] == 1)\n    return(list(0L,s))\n\n  # both new state and reward will be returned\n  new.s <- s\n  reward <- 0L\n\n  oldSignal <- 0\n  params.period <- a[1]\n  params.entryZscore <- a[2]\n  params.exitZscore <- 0\n  params.stoplossZscore <- a[3]\n  openDay <- 0\n\n  #lastday <- s[0]\n  #setpDone <- F\n  num.days <- nrow(price.pair)\n  \n  #标明episo done\n  while( day <= num.days){\n    rolldayPrice <- price.pair[(day - params.period + 1) : day, ]\n    reg <- EstimateParameters(rolldayPrice, method = lm)\n    # Notice: meanSpread & stdSpread is calculated from period price data, not entire data\n    meanSpread <- mean(na.omit(reg$spread))\n    stdSpread <- sd(na.omit(reg$spread))\n    \n    zScore <- (reg$spread - meanSpread) / stdSpread\n    zScore.last <- last(zScore)\n    pair.zscore[day] <<- zScore.last\n    #pair.zscore[day - params.period + 1] <- zScore.last\n    # browser()\n    signal <- DaySignal(zScore.last, oldSignal, params.entryZscore,params.stoplossZscore)\n    signals[day] <<- signal\n    #signals[day - params.period + 1] <- signal\n    #表明开仓了\n    if (signal != oldSignal && signal != 0) {\n      openDay <-  day  \n    }\n    # 表明平仓了\n    if (!is.na(signal)&&signal != oldSignal && signal == 0) {\n      #setpDone <- TRUE\n      day <<- day + 1\n      s[3] <- 0\n      #browser()\n      #计算reward\n      #print(c(day, zScore.last))\n      return (c(reward , s))\n      #browser()\n    }\n    if(!is.na(signal)) oldSignal <- signal\n    \n    day <<- day + 1\n    #print(c(day, zScore.last))\n    \n  }\n  # at last close all position\n  if(oldSignal!=0) signals[day-1] <<- 0\n  s[3] <- 1\n  #计算整体reward\n  return (c(reward,s));\n}\n",
+    "created" : 1456233630232.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "1249113316",
+    "id" : "68C7CE36",
+    "lastKnownWriteTime" : 1456233721,
+    "path" : "D:/百度云/My Box Files/workspaces/TradingStrategy/PairsTradingForRLWk/Setp.R",
+    "project_path" : "Setp.R",
+    "properties" : {
+    },
+    "relative_order" : 3,
+    "source_on_save" : false,
+    "type" : "r_source"
+}

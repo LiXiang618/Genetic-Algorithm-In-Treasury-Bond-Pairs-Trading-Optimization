@@ -1,0 +1,17 @@
+{
+    "contents" : "#Calculate the spread between two stock prices.\n#Assume that log(price) is random walk\n#Assume that prices has two column as matrix\nEstimateParameters <- function(price.pair, method = lm)\n{\n  x <- log(price.pair)\n  \n  reg <- method(x[, 2] ~ x[, 1])\n  hedge.ratio <- as.numeric(reg$coef[2])\n  premium     <- as.numeric(reg$coef[1])\n  spread      <- x[, 2] - (hedge.ratio * x[, 1] + premium)\n  list(spread = spread, hedge.ratio = hedge.ratio, premium = premium)\n}\nEstimateParametersHistorically <- function(price.pair, period, method = lm)\n{\n  Applied <- function(price.pair){\n    reg <- EstimateParameters(price.pair, method)\n    c(spread = as.numeric(last(reg$spread)), hedge.ratio = reg$hedge.ratio, premium = reg$premium)\n  }\n  as.xts(rollapplyr(price.pair, period, Applied, by.column = FALSE))\n}\n#Return wether spread is stationary or not\nIsStationary <- function(spread, threshold)\n{\n  Is.passed.PP.test  <- PP.test(as.numeric(spread))$p.value <= threshold\n  Is.passed.adf.test <- adf.test(as.numeric(spread))$p.value <= threshold\n  c(PP.test = Is.passed.PP.test, adf.test = Is.passed.adf.test)\n}\nHedgeRatio2Weight <- function(hedge.ratio)\n{\n  hedge.ratio <- abs(hedge.ratio)\n  normalization.factor <- 1 / (1 + hedge.ratio)\n  return(cbind(hedge.ratio * normalization.factor, normalization.factor))\n}\n",
+    "created" : 1456385626762.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "1402294575",
+    "id" : "D7F4480B",
+    "lastKnownWriteTime" : 1456573490,
+    "path" : "C:/QuantPlatfrom/pairtrading_base/PairsTradingForRLWK0.1/Cointegration.R",
+    "project_path" : "Cointegration.R",
+    "properties" : {
+    },
+    "relative_order" : 4,
+    "source_on_save" : false,
+    "type" : "r_source"
+}
